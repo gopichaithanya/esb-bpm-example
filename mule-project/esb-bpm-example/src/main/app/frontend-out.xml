@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:jdbc-ee="http://www.mulesoft.org/schema/mule/ee/jdbc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sap="http://www.mulesoft.org/schema/mule/sap" xmlns:twitter="http://www.mulesoft.org/schema/mule/twitter" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/twitter http://www.mulesoft.org/schema/mule/twitter/2.4/mule-twitter.xsd
+http://www.mulesoft.org/schema/mule/sap http://www.mulesoft.org/schema/mule/sap/current/mule-sap.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/jdbc http://www.mulesoft.org/schema/mule/ee/jdbc/current/mule-jdbc-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+    <flow name="flow-frontend-out-toTwitter" doc:name="flow-frontend-out-toTwitter">
+        <jms:inbound-endpoint doc:name="queue.out.tweetNewCustomer" connector-ref="connector-jms" queue="queue.out.tweetNewCustomer"/>
+        <twitter:update-status config-ref="connector-twitter" status="#[payload]" doc:name="Twitter"/>
+    </flow>
+    <flow name="flow-frontend-out-toBpm" doc:name="flow-frontend-out-toBpm">
+        <jms:inbound-endpoint queue="queue.out.startAccountCreationReviewProcess" doc:name="queue.out.startAccountCreationReviewProcess" connector-ref="connector-jms"/>
+        <http:outbound-endpoint exchange-pattern="request-response" host="localhost" port="8080" path="activiti-rest/service/process-instance" method="POST" doc:name="HTTP" contentType="application/json" password="admin" user="admin"/>
+    </flow>
+    <flow name="flow-frontend-out-toSAP" doc:name="flow-frontend-out-toSAP">
+        <jms:inbound-endpoint doc:name="queue.out.createCustomerInSAP" queue="queue.out.createCustomerInSAP" connector-ref="connector-jms"/>
+        <sap:outbound-endpoint type="function" responseTimeout="10000" doc:name="SAP" functionName="BAPI_CUSTOMER_CREATEFROMDATA" definitionFile="sap/customer-createfromdata.xml" connector-ref="connector-sap" exchange-pattern="request-response"/>
+        <sap:object-to-xml xmlVersion="2" doc:name="SAP Object to XML"/>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <logger message="SAP Customer creation result: #[xpath:/jco/export/CUSTOMERNO] #[xpath:/jco/export/RETURN/MESSAGE]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="flow-frontend-out-toDatabase" doc:name="flow-frontend-out-toDatabase">
+        <jms:inbound-endpoint doc:name="queue.out.recordLostOpptInDB" queue="queue.out.recordLostOpptInDB" connector-ref="connector-jms"/>
+        <jdbc-ee:outbound-endpoint exchange-pattern="one-way" queryKey="query-insert-opportunityLost" queryTimeout="-1" connector-ref="connector-jdbc" doc:name="Database"/>
+    </flow>
+    <flow name="flow-frontend-out-toFile" doc:name="flow-frontend-out-toFile">
+        <jms:inbound-endpoint doc:name="queue.out.recordLostOpptInFile" queue="queue.out.recordLostOpptInFile" connector-ref="connector-jms"/>
+        <file:outbound-endpoint path="/tmp/demo/lostOppts" responseTimeout="10000" doc:name="File"/>
+    </flow>
+
+</mule>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <data-mapper:config name="sfdc2canonical_grf" transformationGraphPath="sfdc2canonical.grf" doc:name="sfdc2canonical_grf"/>
+    <flow name="flow-transformation-sfdc2canonical" doc:name="flow-transformation-sfdc2canonical">
+        <jms:inbound-endpoint exchange-pattern="request-response" queue="queue.transform.sfdc2canonical" connector-ref="connector-jms" doc:name="queue.transform.sfdc2canonical"/>
+        <data-mapper:transform config-ref="sfdc2canonical_grf" doc:name="DataMapper"/>
+        <object-to-string-transformer doc:name="Object to String"/>
+    </flow>
+    
+</mule>

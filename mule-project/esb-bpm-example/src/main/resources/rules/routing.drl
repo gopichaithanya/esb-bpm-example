@@ -1,0 +1,29 @@
+import org.mule.MessageExchangePattern;
+import com.mulesoft.demo.Event;
+
+global org.mule.module.bpm.MessageService mule;
+
+dialect "mvel"
+
+declare Event
+    @role(event)
+    @expires(5m)
+end
+
+
+rule "Account is in California"
+	lock-on-active 
+when
+   $event : Event( fields.state == "CA") from entry-point "stream"
+then
+	modify ($event) { setDestination("queue.out.recordLostOpptInDB") }
+end
+
+rule "Account is in Arizona"
+	lock-on-active 
+when
+   $event : Event( fields.state == "AZ") from entry-point "stream"
+then
+	modify ($event) { setDestination("queue.out.recordLostOpptInFile") }
+end
+	

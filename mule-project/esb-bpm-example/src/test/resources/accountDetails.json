@@ -1,0 +1,9 @@
+{
+	"name": "Acme Inc.",
+	"street": "66 Geary Street",
+	"city": "San Francisco",
+	"state": "CA",
+	"zipCode": "94123",
+	"amount": 100000.0,
+	"result": "Closed Lost"
+}

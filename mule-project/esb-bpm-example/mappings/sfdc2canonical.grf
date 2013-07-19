@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="jdeoliveira" created="Wed Jul 10 23:33:36 BST 2013" guiVersion="3.3.2" id="1373538015825" licenseCode="CLPXDMULES37812333BY" licenseType="Commercial" modified="Wed Jul 10 23:33:36 BST 2013" modifiedBy="jdeoliveira" name="sfdc2canonical_grf" preview-file="${Project_Home}/src/test/resources/accountDetails.groovy" revision="1.0" showComponentDetails="false">
+<Global>
+<Metadata __sourcePath="{}/mapMetadata" _dataStructure="OBJECT" _id="__id" _type="Input" id="fe990ee9-ed8f-4523-ade2-0fb415f458bd">
+<Record fieldDelimiter="|" name="mapMetadata" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" name="__id" type="string"/>
+<Field __sourcePath="{}/mapMetadata/Account/Name" containerType="SINGLE" label="Name" name="Name" type="string"/>
+<Field __sourcePath="{}/mapMetadata/Account/BillingCity" containerType="SINGLE" label="BillingCity" name="BillingCity" type="string"/>
+<Field __sourcePath="{}/mapMetadata/Account/BillingPostalCode" containerType="SINGLE" label="BillingPostalCode" name="BillingPostalCode" type="string"/>
+<Field __sourcePath="{}/mapMetadata/Account/BillingStreet" containerType="SINGLE" label="BillingStreet" name="BillingStreet" type="string"/>
+<Field __sourcePath="{}/mapMetadata/Account/BillingState" containerType="SINGLE" label="BillingState" name="BillingState" type="string"/>
+<Field __sourcePath="{}/mapMetadata/StageName" containerType="SINGLE" label="StageName" name="StageName" type="string"/>
+<Field __sourcePath="{}/mapMetadata/Amount" containerType="SINGLE" label="Amount" name="Amount" type="decimal"/>
+<Field __sourcePath="{}/mapMetadata/Id" containerType="SINGLE" label="Id" name="Id" type="string"/>
+</Record>
+</Metadata>
+<Metadata __sourcePath="{}/object" _dataStructure="OBJECT" _id="__id" _type="Output" id="48058cf4-0d9c-496a-826a-f813084d1be9">
+<Record fieldDelimiter="|" name="object" recordDelimiter="\n\\|\r\n\\|\r" type="delimited">
+<Field __artificialType="_id" __systemManaged="true" label="__id" name="__id" type="string"/>
+<Field __sourcePath="{}/object/name" containerType="SINGLE" label="name" name="name" type="string"/>
+<Field __sourcePath="{}/object/street" containerType="SINGLE" label="street" name="street" type="string"/>
+<Field __sourcePath="{}/object/city" containerType="SINGLE" label="city" name="city" type="string"/>
+<Field __sourcePath="{}/object/state" containerType="SINGLE" label="state" name="state" type="string"/>
+<Field __sourcePath="{}/object/zipCode" containerType="SINGLE" label="zipCode" name="zipCode" type="string"/>
+<Field __sourcePath="{}/object/amount" containerType="SINGLE" label="amount" name="amount" type="number"/>
+<Field __sourcePath="{}/object/result" containerType="SINGLE" label="result" name="result" type="string"/>
+</Record>
+</Metadata>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="inputPayload" output="false" type="object"/>
+<Entry id="DictionaryEntry1" input="false" name="outputPayload" output="true" type="object"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="dict:inputPayload" guiHeight="0" guiName="Map&lt;k,v&gt; READER" guiWidth="0" guiX="20" guiY="20" id="BEAN_READER0" type="BEAN_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Context outPort="0" sequenceField="__id" xpath=".">
+  <Mapping cloverField="Name" trim="true" xpath="Account/Name"/>
+  <Mapping cloverField="BillingCity" trim="true" xpath="Account/BillingCity"/>
+  <Mapping cloverField="BillingPostalCode" trim="true" xpath="Account/BillingPostalCode"/>
+  <Mapping cloverField="BillingStreet" trim="true" xpath="Account/BillingStreet"/>
+  <Mapping cloverField="BillingState" trim="true" xpath="Account/BillingState"/>
+  <Mapping cloverField="StageName" trim="true" xpath="StageName"/>
+  <Mapping cloverField="Amount" trim="true" xpath="Amount"/>
+  <Mapping cloverField="Id" trim="true" xpath="Id"/>
+</Context>
+]]></attr>
+<attr name="_data_format"><![CDATA[MAP]]></attr>
+<attr name="__dataSourceDefinition"><![CDATA[${Project_Home}/src/test/resources/accountDetails.groovy]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="dict:outputPayload" guiHeight="0" guiName="JSON WRITER" guiWidth="0" guiX="900" guiY="20" id="JSON_WRITER0" type="JSON_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<object xmlns:clover="http://www.cloveretl.com/ns/xmlmapping" clover:inPort="0">
+  <name>$0.name</name>
+  <street>$0.street</street>
+  <city>$0.city</city>
+  <state>$0.state</state>
+  <zipCode>$0.zipCode</zipCode>
+  <amount>$0.amount</amount>
+  <result>$0.result</result>
+</object>]]></attr>
+<attr name="_data_format"><![CDATA[JSON]]></attr>
+<attr name="jsonSchemaURL"><![CDATA[./src/test/resources/accountDetails.json]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Foreach 'mapMetadata' -&gt; 'object'" guiWidth="0" guiX="460" guiY="20" id="REFORMAT0" transformClass="com.mulesoft.datamapper.transform.MelRecordTransform" type="REFORMAT">
+<attr name="melScript"><![CDATA[//MEL
+//START -> DO NOT REMOVE
+output.__id = input.__id;
+//END -> DO NOT REMOVE
+output.name = input.Name;
+output.amount = input.Amount;
+output.city = input.BillingCity;
+output.zipCode = input.BillingPostalCode;
+output.street = input.BillingStreet;
+output.state = input.BillingState;
+output.result = input.StageName;]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="BEAN_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="fe990ee9-ed8f-4523-ade2-0fb415f458bd" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="48058cf4-0d9c-496a-826a-f813084d1be9" outPort="Port 0 (out)" toNode="JSON_WRITER0:0"/>
+</Phase>
+</Graph>

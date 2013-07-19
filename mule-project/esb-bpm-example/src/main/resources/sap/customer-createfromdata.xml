@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jco name="BAPI_CUSTOMER_CREATEFROMDATA">
+  <import>
+    <structure name="PI_ADDRESS">
+      <field name="FORM_OF_AD" sapDesc="Form of address for contact person (Mr, Mrs...etc)"> </field>
+      <field name="FIRST_NAME" sapDesc="First name"> </field>
+      <field name="NAME" sapDesc="Name 1">#[json:name]</field>
+      <field name="NAME_3" sapDesc="Name 3"></field>
+      <field name="NAME_4" sapDesc="Name 4"></field>
+      <field name="DATE_BIRTH" sapDesc="Date of Birth"> </field>
+      <field name="STREET" sapDesc="House number and street">#[json:street]</field>
+      <field name="POSTL_CODE" sapDesc="Postal Code">#[json:zipCode]</field>
+      <field name="CITY" sapDesc="City">#[json:city]</field>
+      <field name="REGION" sapDesc="Region (State, Province, County)">#[json:state]</field>
+      <field name="COUNTRY" sapDesc="Country Key">US</field>
+      <field name="COUNTRNISO" sapDesc="Field for dismantling country ISO code fields"></field>
+      <field name="COUNTRAISO" sapDesc="Field for dismantling country ISO code fields"></field>
+      <field name="INTERNET" sapDesc="Internet address of partner company clerk"></field>
+      <field name="FAX_NUMBER" sapDesc="Fax Number"></field>
+      <field name="TELEPHONE" sapDesc="First telephone number"></field>
+      <field name="TELEPHONE2" sapDesc="Second telephone number"></field>
+      <field name="LANGU" sapDesc="Language Key">EN</field>
+      <field name="LANGU_ISO" sapDesc="Language according to ISO 639"></field>
+      <field name="CURRENCY" sapDesc="Currency Key">USD</field>
+      <field name="CURRENCY_ISO" sapDesc="ISO code currency"></field>
+      <field name="COUNTRYISO" sapDesc="Country ISO code"></field>
+      <field name="ONLY_CHANGE_COMADDRESS" sapDesc="Checkbox"></field>
+    </structure>
+    <structure name="PI_COPYREFERENCE">
+      <field name="SALESORG" sapDesc="Sales Organization">1000</field>
+      <field name="DISTR_CHAN" sapDesc="Distribution Channel">10</field>
+      <field name="DIVISION" sapDesc="Division">10</field>
+	  <field name="REF_CUSTMR" sapDesc="Reference customer">0000100135</field>
+    </structure>
+  </import>
+</jco>

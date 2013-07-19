@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:bpm="http://www.mulesoft.org/schema/mule/bpm" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:jdbc-ee="http://www.mulesoft.org/schema/mule/ee/jdbc" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/jdbc http://www.mulesoft.org/schema/mule/ee/jdbc/current/mule-jdbc-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/bpm http://www.mulesoft.org/schema/mule/bpm/current/mule-bpm.xsd">
+    <expression-filter expression="#[json:result=Closed Won]" name="filter-opptClosedWon" doc:name="Expression"/>
+    <expression-filter expression="#[json:result=Closed Lost]" name="filter-opptClosedLost" doc:name="Expression"/>
+    <flow name="flow-routing-opptClosedWon" doc:name="flow-routing-opptClosedWon">
+        <jms:inbound-endpoint topic="topic.opportunityClosed" connector-ref="connector-jms" doc:name="topic.opportunityClosed" durableName="opptClosedWon"/>
+        <filter doc:name="Filter WON opportunities" ref="filter-opptClosedWon"/>
+        <all doc:name="All">
+            <processor-chain>
+        	    <set-payload value="Please welcome #[json:name], one of our newest customers!" doc:name="Set tweet contents"/>
+       			<jms:outbound-endpoint queue="queue.out.tweetNewCustomer" connector-ref="connector-jms" doc:name="queue.out.tweetNewCustomer"/>
+            </processor-chain>
+            <processor-chain>
+                <scripting:component doc:name="Prepare process start request">
+                    <scripting:script engine="Groovy">
+                   		<![CDATA[
+import groovy.json.JsonSlurper;  
+import groovy.json.JsonBuilder;
+     
+def slurper = new JsonSlurper();
+
+def request = slurper.parseText(payload);
+request["processDefinitionKey"] = "bpm.accountCreationReviewProcess";
+
+return (new JsonBuilder(request)).toString();
+							]]>
+						</scripting:script>
+					</scripting:component>
+                <jms:outbound-endpoint queue="queue.out.startAccountCreationReviewProcess" connector-ref="connector-jms" doc:name="queue.out.startAccountCreationReviewProcess"/>
+            </processor-chain>
+            <tracking:custom-event event-name="Won opportunity" doc:name="Custom Business event">
+                <tracking:meta-data key="region" value="#[json:state]"/>
+            </tracking:custom-event>
+        </all>
+    </flow>
+    <flow name="flow-routing-opptClosedLost" doc:name="flow-routing-opptClosedLost">
+        <jms:inbound-endpoint topic="topic.opportunityClosed" connector-ref="connector-jms" doc:name="topic.opportunityClosed" durableName="opptClosedLost"/>
+        <filter ref="filter-opptClosedLost" doc:name="Filter LOST opportunities"/>
+        <scripting:component doc:name="Prepare event for rules evaluation">
+            <scripting:script engine="Groovy"><![CDATA[import com.mulesoft.demo.Event;
+
+Event e = new Event();
+e.setContents(payload);
+
+return e;]]></scripting:script>
+        </scripting:component>
+        <bpm:rules rulesDefinition="rules/routing.drl" initialFacts-ref="bean-noFacts" cepMode="true" entryPoint="stream"></bpm:rules>
+        <set-variable variableName="destination" value="#[payload.object.destination]" doc:name="Set destination as variable"/>
+        <set-payload value="#[payload.object.contents]" doc:name="Extract payload from rules event"/>
+        <jms:outbound-endpoint queue="#[flowVars.destination]" connector-ref="connector-jms" doc:name="JMS (DYNAMIC)"/>
+    </flow>
+    <flow name="flow-routing-accountReviewCallback" doc:name="flow-routing-accountReviewCallback">
+        <jms:inbound-endpoint queue="queue.accountCreationReviewProcessCallback" connector-ref="connector-jms" doc:name="queue.accountCreationReviewProcessCallback"/>
+        <logger message="Result of account creation review process: #[payload]" level="INFO" doc:name="Log to audit logs"/>
+        <choice doc:name="Choice">
+            <when expression="#[json:outcome=APPROVED]">
+                <jms:outbound-endpoint queue="queue.out.createCustomerInSAP" connector-ref="connector-jms" doc:name="queue.out.createCustomerInSAP"/>
+            </when>
+            <otherwise>
+                <logger message="Account registration declined, reason: #[json:rejectionReason]" level="INFO" doc:name="Logger"/>
+            </otherwise>
+        </choice>
+    </flow>
+</mule>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="transformation">
+    <global-element name="sfdc2canonical_grf" type="http://www.mulesoft.org/schema/mule/ee/data-mapper/config" entity-id="!!!fd2065ff-d533-4894-ac0f-3701cfdd9412">
+        <properties>
+            <property name="doc:description" value=""/>
+            <property name="name" value="sfdc2canonical_grf"/>
+            <property name="doc:name" value="sfdc2canonical_grf"/>
+            <property name="transformationGraphPath" value="sfdc2canonical.grf"/>
+        </properties>
+    </global-element>
+    <flow SubFlow="false" name="flow-transformation-sfdc2canonical" entity-id="3a174a16-2bb3-456b-9894-5e4bcb578a26">
+        <properties>
+            <property name="processingStrategy"/>
+            <property name="processingStrategy2"/>
+            <property name="bussinessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="auxiliary;index" value="2"/>
+        </properties>
+        <lane hadOnlyOneElement="false" index="0" isChoiceOtherwiseLane="false" entity-id="compartment-lane#1">
+            <graphicalData x="0" y="0" width="0" height="0"/>
+            <endpoint direction="Inbound" message-exchange-pattern="OneWay" name="queue.transform.sfdc2canonical" type="http://www.mulesoft.org/schema/mule/jms/endpoint" entity-id="JMS#1">
+                <graphicalData x="19" y="56" width="186" height="169"/>
+                <properties>
+                    <property name="topic"/>
+                    <property name="queue" value="queue.transform.sfdc2canonical"/>
+                    <property name="durableName"/>
+                    <property name="businessEventsLabel"/>
+                    <property name="disableTransportTransformer"/>
+                    <property name="disableTemporaryReplyToDestinations"/>
+                    <property name="exchange-pattern" value="request-response"/>
+                    <property name="tracking:enable-default-events"/>
+                    <property name="ref"/>
+                    <property name="transformer-refs"/>
+                    <property name="address"/>
+                    <property name="encoding"/>
+                    <property name="responseTransformer-refs"/>
+                    <property name="auxiliary;index" value="3"/>
+                    <property name="mimeType"/>
+                    <property name="responseTimeout"/>
+                    <property name="connector-ref" value="connector-jms"/>
+                </properties>
+            </endpoint>
+            <pattern name="DataMapper" type="http://www.mulesoft.org/schema/mule/ee/data-mapper/data-mapper-connector" entity-id="bb528927-6dad-4be3-bd12-fd6368a985d3">
+                <graphicalData x="265" y="56" width="79" height="67"/>
+                <properties>
+                    <property name="config-ref" value="sfdc2canonical_grf"/>
+                </properties>
+            </pattern>
+            <pattern name="Object to String" type="http://www.mulesoft.org/schema/mule/core/object-to-string-transformer" entity-id="9e1158a2-921b-4bbe-ae0f-e7deef3ccae5">
+                <graphicalData x="0" y="0" width="0" height="0"/>
+            </pattern>
+        </lane>
+    </flow>
+    <description></description>
+</mule-configuration>
