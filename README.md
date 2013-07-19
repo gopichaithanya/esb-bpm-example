@@ -50,6 +50,10 @@ street, city, state, etc.)
 If the account creation request is approved, the account is created on SAP. If
 it's not, the fact is logged on the applications logs.
 
+On the other hand, if the opportunity was closed LOST, depending on the region
+of the associated account in Salesforce, the fact is logged to a file on the
+local filesystem, or to a local MySQL database.
+
 
 4. Architecture and implementation details
 ------------------------------------------
@@ -59,9 +63,6 @@ TO-DO.
 
 2. How to run the example 
 -------------------------
-
-* Import the project into MuleStudio (3.4), by going to the
-  File->Import menu, and selecting "General->Existing project into workspace".
 
 * Download activiti-5.10:
   http://activiti.org/downloads/activiti-5.10.zip
@@ -89,7 +90,15 @@ TO-DO.
   combobox. Then select the Activiti Eclipse BPMN 2.0 Designer item on
   the results list and follow the wizard).
 
-* Login to the ActivitiExplorer going to
+* Import the Mule project into MuleStudio (3.4), by going to the
+  File->Import menu, and selecting "General->Existing project into workspace"
+  and selecting the directory "mule-project/esb-bpm-example".
+
+* Import the NPMN project into MuleStudio (3.4), by going to the
+  File->Import menu, and selecting "General->Existing project into workspace"
+  and selecting the directory "bpmn-project/bpmn-process".
+
+* Login to the BPM Explorer going to
   "http://localhost:8080/activiti-explorer", using "kermit" as the
   username and "kermit" as the password.
 
@@ -97,15 +106,22 @@ TO-DO.
   Activiti Explorer going to Manage->Users.
 
 * Deploy the account creation approval process BAR archive, located on the
-  MuleStudio project under the "deployments" folder (file
+  "bpmn-process" project under the "deployments" folder (file
   .bar), going to Manage->Deployments->Upload new on the
   Activiti explorer. Observe that if you change the Activiti process,
   you'll need to generate again the deployment BAR file by right
-  clicking on the Activiti project on the package explorer of eclipse
+  clicking on the Activiti project on the package explorer
   and selecting "Create deployment artifacts".
 
+* Add the SAP JCO native libraries and jar files on the MuleStudio 
+  project under the src/main/app/lib folder. Add the jar files to the
+  Build path (right click on each jar file and select Build Path->Add to
+  build path).
+
 * Create the database in MySQL using the DDL script located on
-  src/main/resources/ddl.sql.
+  db/ddl.sql.
+
+* Create the local directory /tmp/demo/lostOpportunities.
 
 * Confirm the configuration parameters in
   src/main/resources/config.properties on MuleStudio.
@@ -113,18 +129,18 @@ TO-DO.
 * Right click on the project, and click on Run As -> Mule Application
   on MuleStudio.
 
-* Open the SOAP UI project located on
-  src/test/resources/soapui-project and send a request to the Mule web
-  service, using different amounts for each claim.
+* Go to Salesforce and close an opportunity as WON. Check on the BPM Explorer
+  the account creation review task loggin in as the analyst user and check the
+  published message on Twitter. Approve or reject the request (as the analyst
+  user only or as the analyst user and then as the supervisor user if the
+  opportunity is bigger than 100k USD). Check on the SAP GUI, using transaction
+  number xd03, that the account was created or the application logs if the request
+  was rejected. 
 
-* Go to the ActivitiExplorer, login as "analyst" and "supervisor"
-  users and observe the assigned tasks on the Task section. To approve
-  a request, enter APPROVED as the outcome on the form. To reject a
-  request, enter REJECTED as the outcome as well.
-
-* Send many requests for the same insured name in a time window of 5
-  secs and then login as "fraudanalyst" user in ActivitiBPM, and observe
-  the review task.
+* Go to Salesforce and close an opportunity as LOST. Check the MySQL database
+  table  or the /tmp/demo/lostOpportunities directory (depending on the account
+  region, ARIZONA goes to the directory and CALIFORNIA goes to the MySQL
+  database)
 
 
 3. Resources and additional info 
@@ -134,6 +150,3 @@ TO-DO.
 
 * Info about Drools and complex event processing in Mule:
   http://www.mulesoft.org/documentation/display/MULE3USER/Drools+Module+Reference
-
-* Mule can also run an embedded instance of JBPM 4 process engine:
-  http://www.mulesoft.org/documentation/display/MULE3USER/BPM+Module+Reference
